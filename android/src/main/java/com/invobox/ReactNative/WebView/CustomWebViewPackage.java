@@ -1,4 +1,4 @@
-package com.invobox.rnwebview;
+package com.invobox.ReactNative.WebView;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
