@@ -1,4 +1,4 @@
-package com.invobox.reactnative.webview;
+package com.invobox.rnwebview;
 
 import android.app.Activity;
 import android.content.DialogInterface;

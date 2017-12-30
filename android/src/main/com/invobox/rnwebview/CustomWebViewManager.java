@@ -1,4 +1,4 @@
-package com.invobox.reactnative.webview;
+package com.invobox.rnwebview;
 
 import android.net.Uri;
 import android.webkit.ConsoleMessage;
