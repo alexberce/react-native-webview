@@ -1,4 +1,4 @@
-package com.invobox.custom-web-view;
+package com.invobox.reactnative.webview;
 
 import android.app.Activity;
 import android.content.DialogInterface;
