@@ -40,8 +40,14 @@ public class CustomWebViewManager extends ReactWebViewManager {
                 callback.invoke(origin, true, false);
             }
 
+            // For Android 4.1+
+            @SuppressWarnings("unused")
+            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+                getModule().startFileChooserIntent(uploadMsg, acceptType);
+            }
+
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-                return getModule().startPhotoPickerIntent(filePathCallback, fileChooserParams);
+                return getModule().startFileChooserIntent(filePathCallback, fileChooserParams);
             }
         });
 
