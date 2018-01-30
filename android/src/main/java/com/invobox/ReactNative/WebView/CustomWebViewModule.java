@@ -34,21 +34,21 @@ public class CustomWebViewModule extends ReactContextBaseJavaModule implements A
         return REACT_CLASS;
     }
 
-    public void onActivityResult(Activity activity, int requestCode,
-                                 int resultCode, Intent data) {
+    public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
         if (this.filePathCallback == null) {
             return;
         }
 
         switch (requestCode) {
             case REQUEST_CAMERA:
-                filePathCallback.onReceiveValue(new Uri[]{outputFileUri});
+                if(resultCode == Activity.RESULT_OK)
+                    filePathCallback.onReceiveValue(new Uri[]{outputFileUri});
                 break;
             case SELECT_FILE:
-                filePathCallback.onReceiveValue(
-                        WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+                filePathCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
                 break;
         }
+
         this.filePathCallback = null;
     }
 
@@ -56,35 +56,40 @@ public class CustomWebViewModule extends ReactContextBaseJavaModule implements A
     }
 
     public boolean startPhotoPickerIntent(final ValueCallback<Uri[]> filePathCallback, final WebChromeClient.FileChooserParams fileChooserParams) {
-        final String TAKE_PHOTO = "Take a photo…";
-        final String CHOOSE_FILE = "Choose an image file…";
+        final String TAKE_PHOTO = "Use camera";
+        final String CHOOSE_FILE = "From the gallery";
         final String CANCEL = "Cancel";
-        this.filePathCallback = filePathCallback;
-        // from https://stackoverflow.com/a/36306345/185651
+        final String DIALOG_TITLE = "Add a file";
+        final String FILE_TYPE = "*/*";
         final CharSequence[] items = {TAKE_PHOTO, CHOOSE_FILE, CANCEL};
-        android.app.AlertDialog.Builder builder =
-                new android.app.AlertDialog.Builder(getCurrentActivity());
-        builder.setTitle("Add a photo!");
+
+        this.filePathCallback = filePathCallback;
+
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getCurrentActivity());
+        builder.setTitle(DIALOG_TITLE);
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
                 if (items[item].equals(TAKE_PHOTO)) {
-                    // bring up a camera picker intent; we need to pass a filename for the file to be saved to
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     try {
-                        // need to specify a directory here; the download directory was the one that didn't end up giving me permissions errors
-                        outputFileUri = Uri.fromFile(File.createTempFile("file-", ".jpg", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)));
+                        outputFileUri = Uri.fromFile(
+                            File.createTempFile(
+                                "file-", ".jpg",
+                                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                            )
+                        );
                     } catch (java.io.IOException e) {
                     }
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
                     getCurrentActivity().startActivityForResult(intent, REQUEST_CAMERA);
                 } else if (items[item].equals(CHOOSE_FILE)) {
-                    // display a file chooser; the webview actually gives us this `createIntent` thing that brings up a reasonable image picker
                     getCurrentActivity().startActivityForResult(
-                            fileChooserParams.createIntent().setType("image/*"), SELECT_FILE);
+                            fileChooserParams.createIntent().setType(FILE_TYPE),
+                            SELECT_FILE
+                    );
                 } else if (items[item].equals(CANCEL)) {
                     dialog.dismiss();
-                    // since we are returning `true` below, we need to tell the callback we cancelled
                     filePathCallback.onReceiveValue(null);
                 }
             }
